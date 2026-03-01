@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vilius — Treniruočių Programa</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0A0B; --card: #111113; --card-border: #1C1C1F;
+    --text: #F2F0EB; --text-secondary: #888;
+    --green: #66BB6A; --green-dim: rgba(102,187,106,0.12);
+    --blue: #5C9CE6; --blue-dim: rgba(92,156,230,0.08);
+    --teal: #4DB6AC; --teal-dim: rgba(77,182,172,0.08);
+    --orange: #FF8A65; --orange-dim: rgba(255,138,101,0.08);
+    --red: #EF5350; --red-dim: rgba(239,83,80,0.08);
+    --purple: #B39DDB; --purple-dim: rgba(179,157,219,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .hero { text-align: center; padding: 48px 0 40px; }
+  .hero-emoji { font-size: 64px; margin-bottom: 16px; }
+  .hero-greeting {
+    font-size: 14px; color: var(--blue); font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace; margin-bottom: 8px;
+  }
+  .hero-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .hero-subtitle { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+  .info-card {
+    background: linear-gradient(135deg, rgba(92,156,230,0.08), rgba(77,182,172,0.06));
+    border: 1px solid rgba(92,156,230,0.15);
+    border-radius: 12px; padding: 16px; margin-bottom: 28px;
+    font-size: 13px; line-height: 1.7; color: rgba(242,240,235,0.8);
+  }
+  .info-card .info-label {
+    font-weight: 700; font-size: 12px; color: var(--blue);
+    margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+  }
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--text-secondary);
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;
+  }
+  .workout-cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+  .workout-card {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 16px; padding: 20px; display: flex; align-items: center;
+    gap: 16px; text-decoration: none; color: var(--text);
+    transition: all 0.25s ease; cursor: pointer; position: relative;
+  }
+  .workout-card:hover {
+    border-color: var(--blue); transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .card-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; flex-shrink: 0;
+  }
+  .card-icon-upper { background: var(--orange-dim); }
+  .card-icon-legs { background: var(--blue-dim); }
+  .card-icon-core { background: var(--teal-dim); }
+  .card-info { flex: 1; }
+  .card-day {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--text-secondary);
+    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;
+  }
+  .card-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .card-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+  .card-arrow { font-size: 18px; color: var(--text-secondary); transition: all 0.2s; flex-shrink: 0; }
+  .workout-card:hover .card-arrow { color: var(--blue); transform: translateX(4px); }
+  .card-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .card-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+  }
+  .tag-blue { background: var(--blue-dim); color: var(--blue); }
+  .tag-orange { background: var(--orange-dim); color: var(--orange); }
+  .tag-teal { background: var(--teal-dim); color: var(--teal); }
+  .tag-green { background: var(--green-dim); color: var(--green); }
+  .tag-purple { background: var(--purple-dim); color: var(--purple); }
+  .card-progress {
+    position: absolute; top: 10px; right: 14px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    padding: 2px 8px; border-radius: 6px; display: none;
+  }
+  .card-progress.has-data { display: inline-block; }
+  .card-progress.done { background: var(--green-dim); color: var(--green); }
+  .card-progress.partial { background: var(--orange-dim); color: var(--orange); }
+  .reset-section { text-align: center; margin-bottom: 32px; }
+  .reset-btn {
+    background: transparent; border: 1px solid var(--card-border);
+    color: var(--text-secondary); padding: 8px 16px; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reset-btn:hover { border-color: var(--red); color: #EF5350; }
+  .footer {
+    text-align: center; padding: 20px 0; color: var(--text-secondary);
+    font-size: 11px; margin-top: auto;
+  }
+  .footer a { color: var(--blue); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-emoji">💪</div>
+  <div class="hero-greeting">Sveiki, Viliau!</div>
+  <div class="hero-title">Tavo Treniruočių Programa</div>
+  <div class="hero-subtitle">3 dienos iš eilės · Viršus → Kojos → Core<br>Pasirink dieną ir pirmyn!</div>
+</div>
+
+<div class="info-card">
+  <div class="info-label">💬 Trenerio žinutė</div>
+  Programa sudaryta 3 dienoms <strong>iš eilės</strong>. Eiliškumas parinktas taip, kad raumenų grupės spėtų atsigauti tarp treniruočių:<br><br>
+  <strong>1 diena — Viršus:</strong> Pradedi nuo viršutinės kūno dalies, kol esi šviežias.<br>
+  <strong>2 diena — Kojos:</strong> Sunkiausia treniruotė, bet viršus ilsisi, kojos dar šviežios.<br>
+  <strong>3 diena — Core + Kondicija:</strong> Lengviausia diena, visas kūnas atsigauna.<br><br>
+  Tavo svoriai ir progresas <strong>automatiškai išsaugomi</strong> — grįžęs rasi viską kaip palikęs. Paspauduok Start ir sek programą! 💪
+</div>
+
+<div class="section-label">Pasirink treniruotę</div>
+
+<div class="workout-cards">
+  <a class="workout-card" href="vilius-day2-virsus.html">
+    <span class="card-progress" id="prog-virsus"></span>
+    <div class="card-icon card-icon-upper">💪</div>
+    <div class="card-info">
+      <div class="card-day">1 Diena</div>
+      <div class="card-title">Viršutinė kūno dalis</div>
+      <div class="card-desc">Krūtinė, nugara, pečiai, rankos</div>
+      <div class="card-tags">
+        <span class="card-tag tag-orange">Push</span>
+        <span class="card-tag tag-blue">Pull</span>
+      </div>
+    </div>
+    <span class="card-arrow">→</span>
+  </a>
+
+  <a class="workout-card" href="vilius-day1-kojos.html">
+    <span class="card-progress" id="prog-kojos"></span>
+    <div class="card-icon card-icon-legs">🦵</div>
+    <div class="card-info">
+      <div class="card-day">2 Diena</div>
+      <div class="card-title">Kojos</div>
+      <div class="card-desc">Pritūpimai, lunges, leg press, RDL</div>
+      <div class="card-tags">
+        <span class="card-tag tag-blue">Compound</span>
+        <span class="card-tag tag-purple">Isolation</span>
+      </div>
+    </div>
+    <span class="card-arrow">→</span>
+  </a>
+
+  <a class="workout-card" href="vilius-day3-core.html">
+    <span class="card-progress" id="prog-core"></span>
+    <div class="card-icon card-icon-core">🎯</div>
+    <div class="card-info">
+      <div class="card-day">3 Diena</div>
+      <div class="card-title">Core + Kondicija</div>
+      <div class="card-desc">Pilvo pratimai, stabilizacija, mobility, cardio</div>
+      <div class="card-tags">
+        <span class="card-tag tag-teal">Core</span>
+        <span class="card-tag tag-green">Cardio</span>
+      </div>
+    </div>
+    <span class="card-arrow">→</span>
+  </a>
+</div>
+
+<div class="reset-section">
+  <button class="reset-btn" onclick="resetAll()">🗑️ Išvalyti visų dienų progresą</button>
+</div>
+
+<div class="footer">
+  Made with ❤️ by Neri
+</div>
+
+<script>
+function loadProgress() {
+  const days = [
+    { key: 'vilius-virsus', id: 'prog-virsus' },
+    { key: 'vilius-kojos', id: 'prog-kojos' },
+    { key: 'vilius-core', id: 'prog-core' }
+  ];
+  days.forEach(d => {
+    try {
+      const data = JSON.parse(localStorage.getItem(d.key));
+      if (data && data.completed !== undefined && data.total) {
+        const el = document.getElementById(d.id);
+        el.classList.add('has-data');
+        if (data.completed === data.total) {
+          el.textContent = '✅ Atlikta';
+          el.classList.add('done');
+        } else if (data.completed > 0) {
+          el.textContent = data.completed + '/' + data.total;
+          el.classList.add('partial');
+        }
+      }
+    } catch(e) {}
+  });
+}
+function resetAll() {
+  if (confirm('Tikrai išvalyti visų treniruočių progresą? Svoriai ir pastabos bus ištrintos.')) {
+    localStorage.removeItem('vilius-virsus');
+    localStorage.removeItem('vilius-kojos');
+    localStorage.removeItem('vilius-core');
+    location.reload();
+  }
+}
+loadProgress();
+</script>
+
+</body>
+</html>

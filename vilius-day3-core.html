@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3 Diena — Branduolys ir funkcionalumas | Vilius</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0A0A0B;--card:#111113;--card-border:#1C1C1F;--text:#F2F0EB;--text-secondary:#888;--green:#66BB6A;--green-dim:rgba(102,187,106,0.12);--blue:#5C9CE6;--blue-dim:rgba(92,156,230,0.08);--teal:#4DB6AC;--teal-dim:rgba(77,182,172,0.08);--orange:#FF8A65;--orange-dim:rgba(255,138,101,0.08);--red:#EF5350;--red-dim:rgba(239,83,80,0.08);--yellow:#FFD54F;--yellow-dim:rgba(255,213,79,0.08);--purple:#B39DDB;--purple-dim:rgba(179,157,219,0.08)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:16px;max-width:600px;margin:0 auto}
+  .header{text-align:center;padding:20px 0 16px;border-bottom:1px solid var(--card-border);margin-bottom:16px}
+  .header-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;background:var(--green-dim);color:var(--green);margin-bottom:8px;letter-spacing:1px}
+  .header-title{font-size:24px;font-weight:700;margin-bottom:4px}
+  .header-subtitle{font-size:13px;color:var(--text-secondary);line-height:1.4}
+  .header-name{font-size:14px;color:var(--green);font-weight:600;margin-top:6px}
+  .nav-days{display:flex;gap:4px;background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:4px;margin-bottom:16px}
+  .nav-day{flex:1;padding:10px;text-align:center;font-size:12px;font-weight:600;border-radius:10px;cursor:pointer;border:none;color:var(--text-secondary);font-family:'DM Sans',sans-serif;background:transparent;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all 0.2s}
+  .nav-day.active{background:var(--green);color:var(--bg)}
+  .nav-day:hover:not(.active){color:var(--text)}
+  .nav-day .day-num{font-family:'JetBrains Mono',monospace;font-size:10px;opacity:0.7}
+  .coach-note{background:linear-gradient(135deg,rgba(102,187,106,0.08),rgba(77,182,172,0.06));border:1px solid rgba(102,187,106,0.15);border-radius:12px;padding:14px;margin-bottom:16px;font-size:12px;line-height:1.6;color:rgba(242,240,235,0.8)}
+  .coach-note .label{font-weight:700;font-size:11px;color:var(--green);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+  .timer-section{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;margin-bottom:12px}
+  .timer-display{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;letter-spacing:2px}
+  .timer-info{text-align:right}
+  .timer-info .est{font-size:11px;color:var(--text-secondary)}
+  .timer-info .progress-text{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green)}
+  .timer-btn{background:var(--green);color:#000;border:none;padding:9px 18px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
+  .timer-btn.running{background:var(--orange);color:#fff}
+  .timer-btn.stopped{background:var(--text-secondary)}
+  .progress-bar-c{height:3px;background:var(--card-border);border-radius:2px;margin-bottom:20px;overflow:hidden}
+  .progress-bar-f{height:100%;background:linear-gradient(90deg,var(--green),var(--teal));border-radius:2px;transition:width 0.4s;width:0%}
+  .phase{margin-bottom:16px}
+  .phase-header{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--card-border);margin-bottom:10px}
+  .phase-emoji{font-size:20px}.phase-name{font-weight:700;font-size:15px;flex:1}
+  .phase-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-secondary)}
+  .phase-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-secondary)}
+  .ex{background:var(--card);border:1px solid var(--card-border);border-radius:12px;margin-bottom:6px;overflow:hidden;transition:all 0.3s}
+  .ex.completed{border-color:var(--green);background:rgba(102,187,106,0.04)}
+  .ex-main{display:flex;align-items:flex-start;gap:10px;padding:12px;cursor:pointer}
+  .cb{width:24px;height:24px;border-radius:50%;border:2px solid var(--card-border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;flex-shrink:0;margin-top:1px}
+  .cb:hover{border-color:var(--green)}.ex.completed .cb{background:var(--green);border-color:var(--green)}
+  .cb svg{width:12px;height:12px;opacity:0;transition:opacity 0.2s}.ex.completed .cb svg{opacity:1}
+  .ex-info{flex:1;min-width:0}.ex-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px}
+  .ex-name{font-weight:600;font-size:13px;line-height:1.3}.ex.completed .ex-name{text-decoration:line-through;opacity:0.6}
+  .ex-specs{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-secondary);display:flex;gap:10px;flex-wrap:wrap}
+  .ex-detail{display:none;padding:0 12px 12px;border-top:1px solid var(--card-border)}.ex.expanded .ex-detail{display:block}
+  .arrow{font-size:11px;color:var(--text-secondary);transition:transform 0.2s;flex-shrink:0;margin-top:3px}.ex.expanded .arrow{transform:rotate(180deg)}
+  .ic{padding:9px 11px;border-radius:8px;margin-top:8px;font-size:11px;line-height:1.5;display:flex;gap:8px;align-items:flex-start}
+  .ic .ii{font-size:13px;flex-shrink:0;margin-top:1px}
+  .ic-how{background:var(--blue-dim);color:rgba(242,240,235,0.85)}
+  .ic-why{background:var(--yellow-dim);color:var(--text-secondary)}
+  .ic-warn{background:var(--red-dim);color:var(--red)}
+  .tag{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;padding:2px 7px;border-radius:6px;white-space:nowrap;flex-shrink:0}
+  .tag-c{background:var(--blue-dim);color:var(--blue)}.tag-i{background:var(--purple-dim);color:var(--purple)}
+  .tag-m{background:var(--teal-dim);color:var(--teal)}.tag-f{background:var(--orange-dim);color:var(--orange)}
+  .tag-w{background:var(--green-dim);color:var(--green)}
+  .ni{width:100%;background:var(--bg);border:1px solid var(--card-border);border-radius:8px;padding:7px 9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:11px;outline:none;margin-top:7px;resize:none}
+  .ni::placeholder{color:#444}
+  .td{display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--blue-dim);border-radius:8px;margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:12px}
+  .td .ti{color:var(--blue)}
+  .inputs{display:flex;gap:6px;margin-top:10px;align-items:center}
+  .ig{display:flex;align-items:center;gap:4px;background:var(--bg);padding:5px 8px;border-radius:8px;border:1px solid var(--card-border)}
+  .ig input{background:transparent;border:none;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;width:36px;text-align:center;outline:none}
+  .ig input::placeholder{color:#444}.ig .u{font-size:10px;color:var(--text-secondary)}
+  .it{color:var(--text-secondary);font-size:13px}
+  .sn{background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:14px;margin-top:20px}
+  .sn h3{font-size:13px;margin-bottom:8px;font-weight:600}
+  .sn textarea{width:100%;min-height:70px;background:var(--bg);border:1px solid var(--card-border);border-radius:10px;padding:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;resize:vertical}
+  .sn textarea::placeholder{color:#444}
+  .save{width:100%;padding:14px;background:var(--green);color:#000;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:12px;margin-bottom:30px;transition:all 0.2s}
+  .save:hover{opacity:0.85;transform:translateY(-1px)}
+  .circuit-badge{background:var(--orange-dim);border:1px solid rgba(255,138,101,0.2);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:var(--orange);font-weight:600;text-align:center;font-family:'JetBrains Mono',monospace}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">SPA TRENIRUOTĖS</div>
+  <div class="header-title">3 Diena — Branduolys ir funkcionalumas 🎯</div>
+  <div class="header-subtitle">Core, stabilumas, koordinacija, kardio · ~48 min programuota · ~60 min su poilsiu</div>
+  <div class="header-name">👤 Vilius</div>
+</div>
+
+<div class="nav-days">
+  <a class="nav-day" href="index.html" style="max-width:44px"><span>🏠</span></a>
+  <a class="nav-day" href="vilius-day2-virsus.html"><span>💪 Viršus</span><span class="day-num">1 diena</span></a>
+  <a class="nav-day" href="vilius-day1-kojos.html"><span>🦵 Kojos</span><span class="day-num">2 diena</span></a>
+  <a class="nav-day active" href="vilius-day3-core.html"><span>🎯 Core</span><span class="day-num">3 diena</span></a>
+</div>
+
+<div class="coach-note">
+  <div class="label">💬 Trenerio pastaba</div>
+  Paskutinė diena, Viliau! Po kojų ir viršutinės kūno dalies — šiandien branduolys, stabilumas ir funkcionalūs pratimai. Ši treniruotė kitokia: daugiau ciklų (circuit), mažiau poilsio, daugiau kardio elemento. Tai ne tik pilvo presas — tai visas kūno funkcionalumas: stabilumas, koordinacija, anti-rotacija, pusiausvyra. Baigiam kardio ciklu ir tempimu. Šauni SPA savaitė!
+</div>
+
+<div class="timer-section">
+  <div><div class="timer-display" id="timer">00:00</div></div>
+  <div class="timer-info">
+    <div class="progress-text" id="progress-count">0/15 atlikta</div>
+    <div class="est">~48 min programuota</div>
+  </div>
+  <button class="timer-btn" id="timer-btn" onclick="toggleTimer()">▶ Pradėti</button>
+</div>
+<div class="progress-bar-c"><div class="progress-bar-f" id="progress-bar"></div></div>
+
+<!-- Apšilimas -->
+<div class="phase">
+  <div class="phase-header">
+    <span class="phase-emoji">🔥</span><span class="phase-name">Apšilimas</span>
+    <span class="phase-meta">~5 min</span><span class="phase-count" id="p1-c">0/2</span>
+  </div>
+  <div class="ex" data-p="1">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Irklavimo treniruoklis — lengvas tempas</span><span class="tag tag-w">Kardio</span></div>
+        <div class="ex-specs"><span>3 min</span><span>@ lengvas</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Lengvas irklavimas apšilimui. Aktyvuoja kojas, nugarą ir rankas — paruošia visą kūną funkcionaliam darbui. Neskubėk, 22-24 šūkiai per minutę.</span></div>
+      <div class="td"><span class="ti">⏱</span><span>3 min</span></div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+  <div class="ex" data-p="1">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Pasaulio geriausias tempimas (World's Greatest Stretch)</span><span class="tag tag-m">Mobilumas</span></div>
+        <div class="ex-specs"><span>5 kiekviena pusė</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Ženkite į platų išžengimą. Priešinga ranka prie žemės viduje, kita ranka sukasi aukštyn į lubas. Tada ištiesinkite priekinę koją tempdami šlaunų dvigalvius. Grįžkite ir kartokite. Tai mobilizuoja klubus, stuburą, pečius ir šlaunis vienu judesiu.</span></div>
+      <div class="ic ic-why"><span class="ii">💡</span><span>Vadinamas „pasaulio geriausiu tempimu" ne be reikalo — viename judesyje atidaro praktiškai viską, ko reikia prieš treniruotę.</span></div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+</div>
+
+<!-- Core ciklas 1 -->
+<div class="phase">
+  <div class="phase-header">
+    <span class="phase-emoji">🎯</span><span class="phase-name">Branduolio ciklas Nr. 1</span>
+    <span class="phase-meta">~10 min</span><span class="phase-count" id="p2-c">0/4</span>
+  </div>
+  <div class="circuit-badge">🔄 CIKLAS × 3 ratai · poilsis 60s tarp ratų</div>
+
+  <div class="ex" data-p="2">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Negyvasis vabalas (Dead Bug)</span><span class="tag tag-c">Core</span></div>
+        <div class="ex-specs"><span>8 kiekviena pusė</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Ant nugaros. Rankos tiesiai aukštyn, keliai 90°. Lėtai tieskite dešinę ranką atgal ir kairę koją pirmyn — apatinė nugara visą laiką prispausti prie grindų! Grįžkite ir keiskite pusę. Iškvėpkite tiesiant, įkvėpkite grįžtant.</span></div>
+      <div class="ic ic-why"><span class="ii">💡</span><span>Vienas geriausių branduolio stabilumo pratimų. Moko pilvo raumenis stabilizuoti stuburą kryžminiu judesiu — kaip vaikštant ar bėgant.</span></div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+
+  <div class="ex" data-p="2">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Planka — standartinė</span><span class="tag tag-c">Core</span></div>
+        <div class="ex-specs"><span>40s laikymas</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Dilbiai ant grindų, tiesus kūnas nuo galvos iki kulnų. Spauskite pilvo raumenis, sėdmenis ir keturviršius. Nekelkite ir neleiskite dubens žemyn. Kvėpuokite normaliai — nekartokite kvėpavimo.</span></div>
+      <div class="td"><span class="ti">⏱</span><span>40s</span></div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+
+  <div class="ex" data-p="2">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Paukščio šuo (Bird Dog)</span><span class="tag tag-c">Core</span></div>
+        <div class="ex-specs"><span>8 kiekviena pusė</span><span>3s pauzė viršuje</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Keturpėsčias. Tieskite dešinę ranką pirmyn ir kairę koją atgal vienu metu. Laikykite 3 sekundes — klubai LYGŪS, nesisukite. Tiesi linija nuo pirštų iki pirštų galiukų. Grįžkite lėtai.</span></div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+
+  <div class="ex" data-p="2">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Šoninė planka</span><span class="tag tag-c">Core</span></div>
+        <div class="ex-specs"><span>30s kiekviena pusė</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Ant šono, dilbis ant grindų. Kelkite dubenį — tiesus kūnas nuo galvos iki kojų. Spauskite šoninius pilvo raumenis. Nekelkite ir neleiskite dubens žemyn ar pirmyn/atgal.</span></div>
+      <div class="td"><span class="ti">⏱</span><span>30s kiekviena pusė</span></div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+</div>
+
+<!-- Funkcionalumo ciklas -->
+<div class="phase">
+  <div class="phase-header">
+    <span class="phase-emoji">⚡</span><span class="phase-name">Funkcionalumo ciklas</span>
+    <span class="phase-meta">~14 min</span><span class="phase-count" id="p3-c">0/4</span>
+  </div>
+  <div class="circuit-badge">🔄 CIKLAS × 3 ratai · poilsis 60s tarp ratų</div>
+
+  <div class="ex" data-p="3">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Taurės nešimas (Goblet Carry)</span><span class="tag tag-f">Funkcionalus</span></div>
+        <div class="ex-specs"><span>40m</span><span>@ vidutinis hantelis</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Laikykite hantelį prie krūtinės. Vaikščiokite lėtai, kontroliuotai 40 metrų (arba 20m pirmyn ir 20m atgal). Pečiai atgal, krūtinė aukštai, žvilgsnis pirmyn. Kvėpuokite normaliai.</span></div>
+      <div class="ic ic-why"><span class="ii">💡</span><span>Viso kūno stabilumo pratimas — pilvas, nugara, kojos ir pečiai dirba kartu. Funkcionali jėga, kuri padeda kasdienėje veikloje.</span></div>
+      <div class="inputs">
+        <div class="ig"><input type="text" placeholder="—"/><span class="u">kg</span></div>
+      </div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+
+  <div class="ex" data-p="3">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Hantelio sukimas ant kelių (Pallof Press)</span><span class="tag tag-f">Funkcionalus</span></div>
+        <div class="ex-specs"><span>10 kiekviena pusė</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Kabelis arba guminė juosta — šoninė trauka. Stovėkite šonu į kabelį, laikykite rankeną prie krūtinės. Tieskite rankas tiesiai pirmyn — priešinkitės sukimui! Laikykite 2 sekundes, grąžinkite prie krūtinės. Liemuo nejuda visą pratimą.</span></div>
+      <div class="ic ic-why"><span class="ii">💡</span><span>Vienas geriausių anti-rotacijos pratimų. Moko branduolį priešintis sukimui — tai funkcinė jėga, kuri apsaugo stuburą kasdieniniuose judesyuose.</span></div>
+      <div class="inputs">
+        <div class="ig"><input type="text" placeholder="—"/><span class="u">kg</span></div>
+      </div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+
+  <div class="ex" data-p="3">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Vienos kojos rumuniškas keltis</span><span class="tag tag-f">Funkcionalus</span></div>
+        <div class="ex-specs"><span>8 kiekviena koja</span><span>@ lengvas hantelis</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Stovėkite ant vienos kojos. Hantelis priešingoje rankoje. Lenkitės pirmyn iš klubo, laisva koja tiesiasi atgal. Jauskite tempimą stovinčioje kojoje. Grįžkite kontroliuotai. Visas dėmesys — pusiausvyra ir kontrolė.</span></div>
+      <div class="ic ic-why"><span class="ii">💡</span><span>Lavina pusiausvyrą, vienašalę jėgą ir propriocepciją. Vienas funkcionaliausiausių pratimų — naudinga sportui ir kasdieniam gyvenimui.</span></div>
+      <div class="inputs">
+        <div class="ig"><input type="text" placeholder="—"/><span class="u">kg</span></div>
+      </div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+
+  <div class="ex" data-p="3">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Medicininio kamuolio metimas (Med Ball Slam)</span><span class="tag tag-f">Funkcionalus</span></div>
+        <div class="ex-specs"><span>10 kartų</span><span>@ vidutinis kamuolys</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Medicininis kamuolys virš galvos. Stipriai meskite žemyn į grindis — naudokite visą kūną: rankas, branduolį, kojas. Pagaukite atšokusį ir kartokite. Greitas, sprogstamas judėjimas.</span></div>
+      <div class="ic ic-why"><span class="ii">💡</span><span>Sprogstama jėga + kardio viename. Puikus streso nuleidimas ir energijos išlaisvinimas po dviejų sunkesnių treniruotės dienų.</span></div>
+      <div class="inputs">
+        <div class="ig"><input type="text" placeholder="—"/><span class="u">kg</span></div>
+      </div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+</div>
+
+<!-- Kardio ciklas -->
+<div class="phase">
+  <div class="phase-header">
+    <span class="phase-emoji">🫁</span><span class="phase-name">Kardio baigiamasis</span>
+    <span class="phase-meta">~10 min</span><span class="phase-count" id="p4-c">0/3</span>
+  </div>
+  <div class="circuit-badge">🔄 CIKLAS × 4 ratai · 30s darbas / 15s poilsis · poilsis 60s tarp ratų</div>
+
+  <div class="ex" data-p="4">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Kalnų lipikai (Mountain Climbers)</span><span class="tag tag-w">Kardio</span></div>
+        <div class="ex-specs"><span>30s</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Atsispaudimo pozicija. Traukite kelius paeiliui prie krūtinės greitai. Dubuo tiesiai — nekelkite aukštyn. Kvėpuokite ritmu. Pradėkite vidutiniu tempu, greitinkite jei gerai jaučiatės.</span></div>
+      <div class="td"><span class="ti">⏱</span><span>30s darbas → 15s poilsis</span></div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+
+  <div class="ex" data-p="4">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Iššūkiai (Burpees) — modifikuoti</span><span class="tag tag-w">Kardio</span></div>
+        <div class="ex-specs"><span>30s</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Pritūpkite, rankos ant grindų. Šoktelėkite kojomis atgal į atsispaudimo poziciją. Atgal prie rankų, atsistokite ir šoktelėkite aukštyn su rankomis virš galvos. Modifikuota versija — galite praleisti atsispaudimą arba šuolį.</span></div>
+      <div class="td"><span class="ti">⏱</span><span>30s darbas → 15s poilsis</span></div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+
+  <div class="ex" data-p="4">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Virvės bangavimas (Battle Ropes)</span><span class="tag tag-w">Kardio</span></div>
+        <div class="ex-specs"><span>30s</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Pusiau pritūpę, tvirtas stovėjimas. Bangavimas rankomis aukštyn-žemyn kuo greičiau. Galite keisti tarp vienu metu ir pakaitomis. Jei nėra virvių — pakeiskite „jumping jacks" 30 sekundžių.</span></div>
+      <div class="td"><span class="ti">⏱</span><span>30s darbas → 15s poilsis</span></div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+</div>
+
+<!-- Tempimas -->
+<div class="phase">
+  <div class="phase-header">
+    <span class="phase-emoji">🧘</span><span class="phase-name">Atvėsimas ir tempimas</span>
+    <span class="phase-meta">~6 min</span><span class="phase-count" id="p5-c">0/2</span>
+  </div>
+  <div class="ex" data-p="5">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Vaiko poza (Child's Pose) — platūs keliai</span><span class="tag tag-m">Mobilumas</span></div>
+        <div class="ex-specs"><span>60s laikymas</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Keliai plačiai, didieji pirštai kartu. Sėskite link kulnų, tieskite rankas pirmyn. Leiskite krūtinei lėtai leistis žemyn. Kvėpuokite giliai — 4 sekundės įkvėpimas, 6 sekundės iškvėpimas. Tai atsigavimas, ne darbas.</span></div>
+      <div class="td"><span class="ti">⏱</span><span>60s</span></div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+  <div class="ex" data-p="5">
+    <div class="ex-main" onclick="te(this)">
+      <div class="cb" onclick="event.stopPropagation();tc(this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ex-info">
+        <div class="ex-top"><span class="ex-name">Viso kūno tempimas — laisvas</span><span class="tag tag-m">Mobilumas</span></div>
+        <div class="ex-specs"><span>4-5 min</span><span>jauskite ką reikia</span></div>
+      </div><span class="arrow">▼</span>
+    </div>
+    <div class="ex-detail">
+      <div class="ic ic-how"><span class="ii">🏋</span><span>Tempkite kas labiausiai reikia: klubų lenkėjai (30s kiekviena pusė), šlaunų dvigalviai, krūtinė prie durų staktos, kaklo raumenys (ausies link peties). Po trijų treniruočių dienų — leiskite kūnui atsigauti. Tada — SPA procedūros! 🧖‍♂️</span></div>
+      <div class="td"><span class="ti">⏱</span><span>4-5 min laisvas tempimas</span></div>
+      <input class="ni" placeholder="Pastabos..." />
+    </div>
+  </div>
+</div>
+
+<div class="sn"><h3>📝 Treniruotės pastabos</h3><textarea placeholder="Kaip sekėsi visa SPA savaitė? Kas patiko labiausiai? Kas buvo per sunku / per lengva? Mėgstamiausi pratimai?"></textarea></div>
+<button class="save" onclick="ss()">✅ Išsaugoti treniruotę</button>
+
+<div style="text-align:center;padding:20px 0 40px;color:var(--text-secondary);font-size:12px;line-height:1.6">
+  🎉 Šauniai, Viliau! Trys dienos — atlikta!<br>
+  Dabar laikas SPA procedūroms ir atsigavimui. 🧖‍♂️💆‍♂️
+</div>
+
+<script>
+let tr=false,ti,ts=0;
+function toggleTimer(){const b=document.getElementById('timer-btn');if(!tr){tr=true;b.textContent='⏸ Pauzė';b.classList.add('running');ti=setInterval(()=>{ts++;ud()},1000)}else{tr=false;b.textContent='▶ Tęsti';b.classList.remove('running');b.classList.add('stopped');clearInterval(ti)}}
+function ud(){const m=Math.floor(ts/60),s=ts%60;document.getElementById('timer').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
+function te(el){el.closest('.ex').classList.toggle('expanded')}
+function tc(el){el.closest('.ex').classList.toggle('completed');up();if(!tr&&document.querySelectorAll('.ex.completed').length===1)toggleTimer()}
+function up(){const t=document.querySelectorAll('.ex').length,d=document.querySelectorAll('.ex.completed').length;document.getElementById('progress-count').textContent=d+'/'+t+' atlikta';document.getElementById('progress-bar').style.width=(d/t*100)+'%';for(let i=1;i<=5;i++){const pe=document.querySelectorAll(`.ex[data-p="${i}"]`),pd=document.querySelectorAll(`.ex[data-p="${i}"].completed`),c=document.getElementById(`p${i}-c`);if(c)c.textContent=pd.length+'/'+pe.length}}
+function ss(){const t=document.querySelectorAll('.ex').length,d=document.querySelectorAll('.ex.completed').length,m=Math.floor(ts/60);if(tr)toggleTimer();alert(`✅ Treniruotė išsaugota!\n\n${d}/${t} pratimų atlikta\nTrukmė: ${m} min\n\n🎉 SPA treniruotės baigtos! Šauniai, Viliau!`)}
+
+// === localStorage persistence ===
+const STORAGE_KEY = 'vilius-core';
+
+function autoSave() {
+  const exercises = document.querySelectorAll('.ex');
+  const total = exercises.length;
+  const completed = document.querySelectorAll('.ex.completed').length;
+  const data = { completed: completed, total: total, exercises: [], timer: ts };
+  exercises.forEach((ex, i) => {
+    const inputs = ex.querySelectorAll('input[type="text"], input[type="number"]');
+    const notes = ex.querySelector('.notes-input, textarea');
+    const isCompleted = ex.classList.contains('completed');
+    const vals = [];
+    inputs.forEach(inp => vals.push(inp.value));
+    data.exercises.push({
+      completed: isCompleted,
+      inputs: vals,
+      notes: notes ? notes.value : ''
+    });
+  });
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function autoLoad() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!data || !data.exercises) return;
+    const exercises = document.querySelectorAll('.ex');
+    if (data.timer) { ts = data.timer; ud(); }
+    exercises.forEach((ex, i) => {
+      if (!data.exercises[i]) return;
+      const saved = data.exercises[i];
+      if (saved.completed) ex.classList.add('completed');
+      const inputs = ex.querySelectorAll('input[type="text"], input[type="number"]');
+      inputs.forEach((inp, j) => { if (saved.inputs && saved.inputs[j]) inp.value = saved.inputs[j]; });
+      const notes = ex.querySelector('.notes-input, textarea');
+      if (notes && saved.notes) notes.value = saved.notes;
+    });
+    up();
+  } catch(e) {}
+}
+
+// Auto-save on any input change
+document.addEventListener('input', () => setTimeout(autoSave, 300));
+// Auto-save on checkbox toggle (patch original tc function)
+const origTc = tc;
+tc = function(el) { origTc(el); autoSave(); };
+// Load on page ready
+autoLoad();
+
+</script>
+</body>
+</html>
